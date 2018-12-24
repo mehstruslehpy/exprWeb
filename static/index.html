@@ -1,0 +1,67 @@
+
+<html>
+<head>
+<link href="/static/style.css" rel="stylesheet" type="text/css">
+</head>
+<title>exprweb</title>
+<h1>EXPRWEB</h1>
+<h2>What this is:</h2>
+<p>Exprweb is a port of my exprgraph propositional tableaux prover and my exprtest natural deduction prover to the web.</p>
+<h2>Grammar:</h2>
+<ul>
+	<li>All formulas except negations and single variables are parenthesized.</li>
+	<li># or @ being a single upper case alphabetical character is well formed.</li>
+	<li># or @ may also be one of the compound expressions listed below.</li>
+	<li>(#v@) is a well formed or expression.</li>
+	<li>(#&@) is a well formed and expression.</li>
+	<li>(#->@) is a well formed conditional expression.</li>
+	<li>~@ is a well formed not expression.</li>
+	<li>No other expression is well formed.</li>
+</ul>
+<h3>Example:</h3>
+<p>~((AvB)&~~(~C->~D)) is a well formed formula</p>
+<h2>Input:</h2>
+<p>Enter a list of semicolon separated well formed formulas as premises and a single well formed formula as a conclusion.</p>
+<form action="/prove" method="POST">
+    <!--Premises: <input type="text" name="premises" value="(A->B);A" required/><br>-->
+    Premises:<br>
+    <!--<textarea type="text" name="premises" required>(A->B);A</textarea><br><br>-->
+    <textarea type="text" name="premises" rows=5 required>C;
+((((G & (C & A)) & ~(B -> A)) v G) & F);
+~~~D</textarea><br><br>
+    Conclusion:<br>
+    <textarea type="text" name="conclusion" required>(GvE)</textarea><br><br>
+	<input type="submit" value="prove it"/>
+</form>
+<h2>Exprtest Inference Rules:</h2>
+<p>These are modified from Harry Genslers intro to logic book.</p>
+<ul>
+    <li> {(AvB), ~A |- B} for v's}</li>
+    <li> {(A&B) |- A, B} for &'s}</li>
+    <li> {(A->B), A |- B} for ->'s (modus ponens)}</li>
+    <li> {(A->B), ~B |- ~A} for ->'s (modus tollens)}</li>
+    <li> {~~A |- A} double negation}{</li>
+    <li> {~(AvB) |- ~A, ~B} negated v's}</li>
+    <li> {~(A&B), A |- ~B} negated &'s}</li>
+    <li> {~(A->B) |- A, ~B} negated ->'s}</li>
+</ul>
+<h2>Exprgraph Inference Rules:</h2>
+<p>These are modified from Graham Priests introductory book on non-classical logic.</p>
+<ul>
+    <li>(A&B), conjunctions extend all leaves with A and B individually.</li>
+    <li>(AvB), disjunctions extend each leaf with a fork, one side containing A the other containing B.</li>
+    <li>(A->B), conditionals are interpreted as the material conditional (~AvB) and the disjunctive rule above is applied to this formula.</li>
+    <li>~(AvB), negated disjunctions are interpreted based on demorgans law as (~A&~B) and the conjunctive rule above is applied to this formula.</li>
+    <li>~(A&B), negated conjunctions are interpreted based on demorgans law as (~Av~B) and the disjunctive rule above is applied to this formula.</li>
+    <li>~(A->B), negated conditionals are interpreted based on demorgans law on the material conditional as (A&~B) and the conjunctive rule above is applied to this formula.</li>
+    <li>~~A, double negations extend each leaf with the original formula, for example ~~A extends the tree with A.</li>
+</ul>
+<p>
+Note: The above tableaux rules can be condensed down to three via various uniform notations. The program logic for this particular program did not work out exactly like that
+but generally I think of three kinds of operations that are performed by exprgraph: disjunctive/splits, conjunctive/extensions and double negation based extensions.
+Pictorial representations of the above rules can be found <a href="https://en.wikipedia.org/wiki/Method_of_analytic_tableaux">here</a> under propositional logic.</p>
+<h2>Further Info:</h2>
+The exprtest source, inference rules, doxygen code docs and proof method can be found <a href="https://github.com/mehstruslehpy/exprTest">here</a>.<br>
+More info on exprgraph can be found here <a href="https://github.com/mehstruslehpy/exprGraph">here</a>.<br>
+More stuff by me can be found <a href="https://mehstruslehpy.neocities.org/">here</a>.<br>
+</html>

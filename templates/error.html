@@ -1,0 +1,9 @@
+<!doctype html>
+<title>Error Page</title>
+{% if error %}
+<title>Error Page</title>
+  <h1>ERROR: {{ error }}</h1>
+{% else %}
+<title>Error Page</title>
+  <h1>ERROR: Unknown</h1>
+{% endif %}
