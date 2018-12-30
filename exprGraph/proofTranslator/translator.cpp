@@ -228,6 +228,8 @@ bool isLastFormula()
 void hereDocPreamble(ofstream& fout)
 {
     //cout << "FILE: ../main <<-ENDOFMESSAGE" << endl;
+    cout << "FILE:#!/bin/sh" << endl;
+    fout << "#!/bin/sh" << endl;
     cout << "FILE:../main > proveeroutput.txt <<-ENDOFMESSAGE" << endl;
     //fout << "../main <<-ENDOFMESSAGE" << endl;
     fout << "../main >proveroutput.txt<<-ENDOFMESSAGE" << endl;

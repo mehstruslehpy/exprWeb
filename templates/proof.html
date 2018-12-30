@@ -2,21 +2,41 @@
 <head>
 <link href="static/style.css" rel="stylesheet" type="text/css">
 </heade>
+
 <title>Proof Page</title>
+
 <h1>Your Proof:</h1>
+
 <h2>Your Premises:</h2>
 <p>{{premises|safe}}</p>
+
 <h2>Your Conclusion:</h2>
 <p>{{conclusion|safe}}</p>
-{% if linear_proof %}
+
 	<h2>Natural Deduction Style:</h2>
+{% if linear_proof %}
     <p>
     {{ linear_proof | safe }}
     </p>
+{% else %}
+	<p>Error: The exprtest prover did not serve a proof.</p>
+	<ul>
+	    <li>Were all your formulas well formed? The prover will not handle ill-formed formulas reliably.</li>
+	    <li>Was your argument reasonable? Due to hosting requirements the prover will only allow one minute for the natural deduction proof engine, one for the tableau proof engine and one for building the generated svg</li>
+	    <li>Would the output of your proof be excessively long?</li>
+    </ul>
+{% endif %}
+
     <h2>Tableaux Style:</h2>
+{% if graph_proof %}
 	{{ graph_proof | safe }}
 {% else %}
-	<p>Error: something went wrong</p>
+	<p>Error: The exprgraph prover did not serve a proof.</p>
+	<ul>
+	    <li>Were all your formulas well formed? The prover will not handle ill-formed formulas reliably.</li>
+	    <li>Was your argument reasonable? Due to hosting requirements the prover will only allow one minute of processing for the natural deduction proof engine, one minute of processing for the tableau proof engine and one minute of processing for building the generated svg</li>
+        <li>Would the output of your proof be excessively long?</li>
+    </ul>
 {% endif %}
 
 </html>

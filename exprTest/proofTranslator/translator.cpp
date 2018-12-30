@@ -227,6 +227,8 @@ bool isLastFormula()
 //every heredoc starts the same way
 void hereDocPreamble(ofstream& fout)
 {
+    cout << "FILE: #!/bin/sh" << endl;
+    fout << "#!/bin/sh" << endl;
     cout << "FILE: ../main > proveroutput.txt <<-ENDOFMESSAGE" << endl;
     fout << "../main > proveroutput.txt <<-ENDOFMESSAGE" << endl;
     fout << "\tp #this program is always prove mode" << endl;

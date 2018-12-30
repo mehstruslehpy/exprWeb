@@ -1,13 +1,20 @@
+#flask stuff
 from flask import Flask
 from flask import render_template
 from flask import request
-# from flask import url_for
 from flask import send_from_directory
+#regexes
 import re
+#scripting stuff
 import subprocess
 import os
-app = Flask(__name__)
+import signal
 
+from subprocess import Popen, PIPE, TimeoutExpired
+from time import monotonic as timer
+
+app = Flask(__name__)
+TIMEOUT=30
 
 @app.route("/")
 def nocommand():
@@ -73,54 +80,72 @@ def validate_argument(premises, conclusion):
     return retval
 
 def prove_argument(premises, conclusion):
+    print("-----------------------------------------------------------------------")
+    print("DEBUG: prove_argument() new proof")
     linear_proof = proof_exprtest(premises, conclusion)
+    #print("DEBUG linear_proof:"+linear_proof)
     graph_proof = proof_exprgraph(premises, conclusion)
     return render_template('proof.html', premises=premises.replace(";","<br>"), conclusion=conclusion, linear_proof=linear_proof,
                            graph_proof=graph_proof)
 
 
 def proof_exprgraph(premises, conclusion):
-    #subprocess.call(["rm", "proveroutput.txt"])
-    #subprocess.call(["rm", "proveroutput.svg"])
     starting_dir = os.getcwd()
     build_translate_file(premises, conclusion,
                          "/home/mehstruslehpy3/exprweb/exprGraph/proofTranslator/transfile_heredoc.txt")
     os.chdir("/home/mehstruslehpy3/exprweb/exprGraph/proofTranslator")
+
     subprocess.call(["chmod", "+x", "transfile_heredoc.txt"])
-    subprocess.call("./transfile_heredoc.txt", shell=True)
+    #subprocess.call("./transfile_heredoc.txt", shell=True)
+    print("DEBUG: running /home/mehstruslehpy3/exprweb/exprGraph/proofTranslator/transfile_heredoc.txt")
+    run("/home/mehstruslehpy3/exprweb/exprGraph/proofTranslator/transfile_heredoc.txt",TIMEOUT)
     subprocess.call(["chmod", "+x", "output_heredoc.txt"])
-    subprocess.call("./output_heredoc.txt", shell=True)
-    subprocess.call("./buildsvg.sh")
+    #subprocess.call("./output_heredoc.txt", shell=True)
+    print("DEBUG: running /home/mehstruslehpy3/exprweb/exprGraph/proofTranslator/output_heredoc.txt")
+    run("/home/mehstruslehpy3/exprweb/exprGraph/proofTranslator/output_heredoc.txt",TIMEOUT)
+    print("DEBUG: running /home/mehstruslehpy3/exprweb/exprGraph/proofTranslator/buildsvg.sh")
+    run("/home/mehstruslehpy3/exprweb/exprGraph/proofTranslator/buildsvg.sh",TIMEOUT)
+    #subprocess.call("./buildsvg.sh")
 
     #outfile = open("proveroutput.txt", 'r')
     outfile = open("proveroutput.svg", 'r')
-    os.chdir(starting_dir)
+
     proof = outfile.readlines()
     outfile.close()
     outstr = ""
     i = 0
     while (i < len(proof)):
-        #proof[i] = '\''+proof[i]
-        #proof[i] = proof[i].replace('\n', ' \'+\n ')
         outstr += proof[i]
         i += 1
+    subprocess.call(["rm", "proveroutput.txt"])
+    subprocess.call(["rm", "output_heredoc.txt"])
+    subprocess.call(["rm", "transfile_heredoc.txt"])
+    subprocess.call(["rm", "proveroutput.svg"])
+    subprocess.call(["rm", "OUTPUT_DOTFILE_PROOF.gv"])
+    #print("DEBUG: ls-altr:")
+    #subprocess.call(["ls","-altr"])
+    os.chdir(starting_dir)
     return outstr
 
 
 def proof_exprtest(premises, conclusion):
-    #subprocess.call(["rm", "proveroutput.txt"])
+    print("DEBUG: proof_exprtest()")
     starting_dir = os.getcwd()
     build_translate_file(premises, conclusion,
                          "/home/mehstruslehpy3/exprweb/exprTest/proofTranslator/transfile_heredoc.txt")
     os.chdir("/home/mehstruslehpy3/exprweb/exprTest/proofTranslator")
     subprocess.call(["chmod", "+x", "transfile_heredoc.txt"])
-    subprocess.call("./transfile_heredoc.txt", shell=True)
+    #subprocess.call("./transfile_heredoc.txt", shell=True)
+    print("DEBUG: running /home/mehstruslehpy3/exprweb/exprTest/proofTranslator/transfile_heredoc.txt")
+    run("/home/mehstruslehpy3/exprweb/exprTest/proofTranslator/transfile_heredoc.txt",TIMEOUT)
     subprocess.call(["chmod", "+x", "output_heredoc.txt"])
-    subprocess.call("./output_heredoc.txt", shell=True)
+    print("DEBUG: running /home/mehstruslehpy3/exprweb/exprTest/proofTranslator/output_heredoc.txt")
+    run("/home/mehstruslehpy3/exprweb/exprTest/proofTranslator/output_heredoc.txt",TIMEOUT)
+    #subprocess.call("./output_heredoc.txt", shell=True)
     #subprocess.call(["rm", "output_heredoc.txt", "transfile_heredoc.txt"])
 
     outfile = open("proveroutput.txt", 'r')
-    os.chdir(starting_dir)
+
     proof = outfile.readlines()
     outfile.close()
 
@@ -130,12 +155,20 @@ def proof_exprtest(premises, conclusion):
         proof[i] = proof[i].replace('\n', ' <br> ')
         outstr += proof[i]
         i += 1
+    subprocess.call(["rm", "proveroutput.txt"])
+    subprocess.call(["rm", "output_heredoc.txt"])
+    subprocess.call(["rm", "transfile_heredoc.txt"])
+    subprocess.call(["rm", "proveroutput.txt"])
+    #print("DEBUG: ls-altr:")
+    #subprocess.call(["ls","-altr"])
+    os.chdir(starting_dir)
     return outstr
 
 
 def build_translate_file(premises, conclusion, path):
     #subprocess.call(["ls","-altr"])
     outfile = open(path, 'w')
+    outfile.write("#!/bin/sh\n")
     outfile.write("./translator << ENDOFMESSAGE\n")
     #premises_list = premises.split(";", len(premises_list))
     premises_list = premises.split(";")
@@ -157,9 +190,26 @@ def build_translate_file(premises, conclusion, path):
     outfile.close()
     return "SAMPLE OUTPUT"
 
-# requires requests like: http://localhost:5000/command/hello%20world
-# @app.route("/command/<cmd>")
-# def command(cmd):
-#    input_arr = cmd.split(";", 1)
-#    print(input_arr)
-#    return 'Command specified %s' % cmd
+#from SO runs command and terminates after a timeout period if process does not end
+def run(cmd, timeout_sec):
+    start = timer()
+    with Popen(cmd, shell=True, stdout=PIPE, preexec_fn=os.setsid) as process:
+        try:
+            output = process.communicate(timeout=timeout_sec)[0]
+        except TimeoutExpired:
+            os.killpg(process.pid, signal.SIGINT) # send signal to the process group
+            output = process.communicate()[0]
+            print("DEBUG: process timed out: "+cmd)
+    print('DEBUG: Elapsed seconds: {:.2f}'.format(timer() - start))
+    #proc = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE,shell=False)
+    #timer = Timer(timeout_sec, proc.kill)
+    #print("DEBUG: before try")
+    #try:
+        #print("DEBUG: within try")
+        #timer.start()
+        #stdout, stderr = proc.communicate()
+    #except:
+    #    print("DEBUG: process ran too long")
+    #finally:
+        #print("DEBUG: within finally")
+        #timer.cancel()
